@@ -9,6 +9,18 @@ data:
         "menuLinks": [
             {
                 "icon": "book",
+                "link": "/workspaces/",
+                "text": "Workspaces",
+                "type": "item"
+            },
+            {
+                "icon": "settings",
+                "link": "/workspaces/workspacekinds/",
+                "text": "Workspaces Administrator",
+                "type": "item"
+            },
+            {
+                "icon": "book",
                 "items": [
                     {
                         "link": "/jupyter/",
@@ -27,23 +39,6 @@ data:
                     }
                 ],
                 "text": "Notebooks v1",
-                "type": "section"
-            },
-            {
-                "icon": "book",
-                "items": [
-                    {
-                        "link": "/workspaces/",
-                        "text": "Workspaces",
-                        "type": "item"
-                    },
-                    {
-                        "link": "/workspaces/workspacekinds/",
-                        "text": "WorkspaceKinds",
-                        "type": "item"
-                    }
-                ],
-                "text": "Notebooks v2",
                 "type": "section"
             },
             {

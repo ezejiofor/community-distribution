@@ -12,20 +12,14 @@ data:
         "menuLinks": [
             {
                 "icon": "book",
-                "link": "/jupyter/",
-                "text": "Notebooks",
+                "link": "/workspaces/",
+                "text": "Workspaces",
                 "type": "item"
             },
             {
-                "icon": "assessment",
-                "link": "/tensorboards/",
-                "text": "TensorBoards",
-                "type": "item"
-            },
-            {
-                "icon": "device:storage",
-                "link": "/volumes/",
-                "text": "Volumes",
+                "icon": "settings",
+                "link": "/workspaces/workspacekinds/",
+                "text": "Workspaces Administrator",
                 "type": "item"
             },
             {
@@ -115,8 +109,8 @@ data:
         "quickLinks": [
             {
                 "desc": "Kubeflow Notebooks",
-                "link": "/jupyter/new",
-                "text": "Create a new Notebook"
+                "link": "/workspaces/",
+                "text": "Open Workspaces"
             },
             {
                 "desc": "Kubeflow Pipelines",

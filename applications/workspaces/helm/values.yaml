@@ -1,8 +1,5 @@
 # Default values for the Kubeflow Workspaces chart.
 #
-# Workspaces (Notebooks v2) is still pre-GA. Do not deploy it to a production
-# cluster.
-#
 # The chart vendors the Kustomize Istio overlay with two controlled transforms:
 # both definitions receive helm.sh/resource-policy: keep, and the three
 # aggregated ClusterRoles omit their empty rules field, which the Kubernetes

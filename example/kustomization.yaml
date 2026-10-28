@@ -72,8 +72,6 @@ resources:
 - ../applications/katib/upstream/installs/katib-with-kubeflow
 # Central Dashboard
 - ../applications/dashboard/overlays/istio
-# Notebooks v1
-- ../applications/notebooks-v1/overlays/istio
 # Workspaces (Notebooks v2)
 - ../applications/workspaces/overlays/istio
 # Trainer
@@ -85,7 +83,6 @@ resources:
 - ../applications/kserve/kserve-ui
 # Spark Operator
 - ../applications/spark/spark-operator/overlays/kubeflow
-
 # Hub — Model Registry (per-tenant: deployed to user profile namespace)
 - ../applications/hub/overlays/model-registry
 # Hub — Model Catalog (cluster-wide singleton: deployed to kubeflow namespace)
@@ -96,6 +93,10 @@ resources:
 # Here is the internal documentation for Ray: - ../experimental/ray/README.md
 # - ../experimental/ray/kuberay-operator/overlays/kubeflow
 
-components:
-# Adds the Workspaces menu entry to the Central Dashboard ConfigMap
-- ../applications/workspaces/components/centraldashboard
+# Notebooks v1 (legacy, superseeded by Kubeflow Workspaces)
+# Notebooks 1.0 is disabled by default in `example/kustomization.yaml` and will be removed in Kubeflow 27.03.
+# To enable it, also enable its Central Dashboard menu component below.
+# - ../applications/notebooks-v1/overlays/istio
+# Add the Notebooks v1 section to the Central Dashboard menu, which lists Workspaces by default
+# components:
+# - ../applications/notebooks-v1/components/centraldashboard

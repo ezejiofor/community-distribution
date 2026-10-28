@@ -1,12 +1,5 @@
 # Kubeflow Workspaces Helm Chart
 
-> **DANGER: Workspaces (Notebooks v2) is still pre-GA.**
->
-> **DO NOT DEPLOY THIS TO A PRODUCTION CLUSTER.**
->
-> See this for the current status:
-> <https://www.kubeflow.org/docs/components/notebooks/notebooks-v2-pre-ga-banner>
-
 This chart renders the Kubeflow Workspaces Kustomize resources
 (`applications/workspaces/overlays/istio`: controller, backend and frontend)
 with Helm. Kustomize remains the source of truth. `kubeflow/notebooks` publishes
@@ -39,9 +32,10 @@ Install these first, in this order:
    `AuthorizationPolicy` objects, and the namespace it creates is labelled
    `istio-injection: enabled`.
 
-The Workspaces menu entry of the Central Dashboard
-(`applications/workspaces/components/centraldashboard`) is not part of this
-chart.
+The Workspaces menu entries are part of the default Central Dashboard
+configuration (`applications/dashboard`), not of this chart. The Notebooks v1
+variant of the menu lives in
+`applications/notebooks-v1/components/centraldashboard`.
 
 ## Install
 

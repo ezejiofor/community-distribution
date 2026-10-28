@@ -395,17 +395,13 @@ For detailed pipeline compilation instructions, please refer to the [Kubeflow Pi
 ./tests/katib_install.sh
 ```
 
-#### Notebooks 1.0
-
-```sh
-./tests/notebooks_install.sh
-```
-
-This installs the Notebook Controller, Jupyter Web Application, PVC Viewer Controller, Volumes Web Application, Tensorboard Controller, and Tensorboards Web Application.
-
 #### Workspaces (Notebooks 2.0)
 
-This feature is still in development.
+```sh
+./tests/workspaces_install.sh
+```
+
+This installs the Workspaces controller, backend and frontend, which provide the Workspaces and Workspaces Administrator pages of the Central Dashboard.
 
 #### Trainer
 
@@ -576,12 +572,10 @@ The matching Python packages are `kfp==2.18.0` and `kfp-kubernetes==2.18.0`. The
 kubectl delete clusterrolebinding meta-controller-cluster-role-binding
 ```
 
-#### 1.10.2 -> 1.11.0 (26.03)
+#### 1.10.2 -> 1.11.0
 - Migrates from minio to seaweedfs. Delete minio and optionally migrate your data via S3 commands to seaweedfs.
 
-#### 26.03 -> next release
-
-The following manual steps are required when upgrading from `release-26.03` to the next release:
+#### 26.03 -> 26.03.1
 
 1. **JobSet Controller Manager** ([#3428](https://github.com/kubeflow/community-distribution/issues/3428), introduced by [#3413](https://github.com/kubeflow/community-distribution/pull/3413)): The upstream JobSet upgrade from v0.10.1 to v0.11.0 changed `spec.selector.matchLabels` from 1 label to 4 labels, which is an immutable field. Delete the Deployment before applying:
    ```sh
@@ -736,6 +730,98 @@ The following manual steps are required when upgrading from `release-26.03` to t
      certificate.cert-manager.io/localmodel-serving-cert \
      issuer.cert-manager.io/selfsigned-issuer
    ```
+
+
+#### 26.03.1 -> 26.10.0
+
+1. **Optional Notebooks v1 cleanup**: After retiring all Notebooks v1 and TensorBoard workloads, delete the following legacy resources, including the three legacy custom resource definitions. Preserve namespaces, persistent volumes and persistent volume claims:
+
+  > **WARNING:** Confirm that no `Notebook`, `Tensorboard` or `PVCViewer` objects remain in any namespace before cleanup. Deleting these definitions deletes all remaining instances and can cascade to owned resources.
+
+   ```sh
+   kubectl delete --ignore-not-found \
+     mutatingwebhookconfiguration/pvcviewer-mutating-webhook-configuration \
+     validatingwebhookconfiguration/pvcviewer-validating-webhook-configuration
+
+   kubectl delete --namespace kubeflow --ignore-not-found \
+     deployment/jupyter-web-app-deployment \
+     deployment/notebook-controller-deployment \
+     deployment/pvcviewer-controller-manager \
+     deployment/tensorboard-controller-deployment \
+     deployment/tensorboards-web-app-deployment \
+     deployment/volumes-web-app-deployment \
+     service/jupyter-web-app-service \
+     service/notebook-controller-service \
+     service/pvcviewer-controller-manager-metrics-service \
+     service/pvcviewer-webhook-service \
+     service/tensorboard-controller-controller-manager-metrics-service \
+     service/tensorboards-web-app-service \
+     service/volumes-web-app-service \
+     serviceaccount/jupyter-web-app-service-account \
+     serviceaccount/notebook-controller-service-account \
+     serviceaccount/pvcviewer-controller-manager \
+     serviceaccount/tensorboard-controller-controller-manager \
+     serviceaccount/tensorboards-web-app-service-account \
+     serviceaccount/volumes-web-app-service-account \
+     role.rbac.authorization.k8s.io/jupyter-web-app-jupyter-notebook-role \
+     role.rbac.authorization.k8s.io/notebook-controller-leader-election-role \
+     role.rbac.authorization.k8s.io/pvcviewer-leader-election-role \
+     role.rbac.authorization.k8s.io/tensorboard-controller-leader-election-role \
+     rolebinding.rbac.authorization.k8s.io/jupyter-web-app-jupyter-notebook-role-binding \
+     rolebinding.rbac.authorization.k8s.io/notebook-controller-leader-election-rolebinding \
+     rolebinding.rbac.authorization.k8s.io/pvcviewer-leader-election-rolebinding \
+     rolebinding.rbac.authorization.k8s.io/tensorboard-controller-leader-election-rolebinding \
+     configmap/jupyter-web-app-logos \
+     certificate.cert-manager.io/pvcviewer-serving-cert \
+     issuer.cert-manager.io/pvcviewer-selfsigned-issuer \
+     destinationrule.networking.istio.io/jupyter-web-app \
+     destinationrule.networking.istio.io/tensorboards-web-app \
+     destinationrule.networking.istio.io/volumes-web-app \
+     virtualservice.networking.istio.io/jupyter-web-app-jupyter-web-app \
+     virtualservice.networking.istio.io/tensorboards-web-app-tensorboards-web-app \
+     virtualservice.networking.istio.io/volumes-web-app-volumes-web-app \
+     authorizationpolicy.security.istio.io/jupyter-web-app \
+     authorizationpolicy.security.istio.io/tensorboards-web-app \
+     authorizationpolicy.security.istio.io/volumes-web-app
+
+   kubectl delete --ignore-not-found \
+     clusterrole/jupyter-web-app-cluster-role \
+     clusterrole/jupyter-web-app-kubeflow-notebook-ui-admin \
+     clusterrole/jupyter-web-app-kubeflow-notebook-ui-edit \
+     clusterrole/jupyter-web-app-kubeflow-notebook-ui-view \
+     clusterrole/notebook-controller-kubeflow-notebooks-admin \
+     clusterrole/notebook-controller-kubeflow-notebooks-edit \
+     clusterrole/notebook-controller-kubeflow-notebooks-view \
+     clusterrole/notebook-controller-role \
+     clusterrole/pvcviewer-metrics-reader \
+     clusterrole/pvcviewer-proxy-role \
+     clusterrole/pvcviewer-role \
+     clusterrole/tensorboard-controller-manager-role \
+     clusterrole/tensorboard-controller-metrics-reader \
+     clusterrole/tensorboard-controller-proxy-role \
+     clusterrole/tensorboards-web-app-cluster-role \
+     clusterrole/tensorboards-web-app-kubeflow-tensorboard-ui-admin \
+     clusterrole/tensorboards-web-app-kubeflow-tensorboard-ui-edit \
+     clusterrole/tensorboards-web-app-kubeflow-tensorboard-ui-view \
+     clusterrole/volumes-web-app-cluster-role \
+     clusterrole/volumes-web-app-kubeflow-volume-ui-admin \
+     clusterrole/volumes-web-app-kubeflow-volume-ui-edit \
+     clusterrole/volumes-web-app-kubeflow-volume-ui-view \
+     clusterrolebinding/jupyter-web-app-cluster-role-binding \
+     clusterrolebinding/notebook-controller-role-binding \
+     clusterrolebinding/pvcviewer-manager-rolebinding \
+     clusterrolebinding/pvcviewer-proxy-rolebinding \
+     clusterrolebinding/tensorboard-controller-manager-rolebinding \
+     clusterrolebinding/tensorboard-controller-proxy-rolebinding \
+     clusterrolebinding/tensorboards-web-app-cluster-role-binding \
+     clusterrolebinding/volumes-web-app-cluster-role-binding
+
+   kubectl delete --ignore-not-found \
+     customresourcedefinition/notebooks.kubeflow.org \
+     customresourcedefinition/pvcviewers.kubeflow.org \
+     customresourcedefinition/tensorboards.tensorboard.kubeflow.org
+   ```
+   Version-specific hashed ConfigMaps can be left untouched.
 
 ## Release Process
 
