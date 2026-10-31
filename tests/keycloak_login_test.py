@@ -37,9 +37,7 @@ CODE_CHALLENGE = (
 # profile namespace and be refused for the "kubeflow" namespace.
 APPLICATION_ENDPOINTS = {
     "Pipelines": "/pipeline/apis/v2beta1/runs?namespace={namespace}",
-    "Jupyter": "/jupyter/api/namespaces/{namespace}/notebooks",
-    "Volumes": "/volumes/api/namespaces/{namespace}/pvcs",
-    "Tensorboards": "/tensorboards/api/namespaces/{namespace}/tensorboards",
+    "Workspaces": "/workspaces/api/v1/workspaces/{namespace}",
     "Katib": "/katib/fetch_experiments/?namespace={namespace}",
     "KServe": "/kserve-endpoints/api/namespaces/{namespace}/inferenceservices",
 }

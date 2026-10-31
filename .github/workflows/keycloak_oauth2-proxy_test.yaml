@@ -14,10 +14,14 @@ on:
     - tests/keycloak/**
     - tests/keycloak_install.sh
     - tests/keycloak_login_test.py
-    - tests/oauth2-proxy_keycloak_install.sh
+    - tests/keycloak_oauth2-proxy_install.sh
     - tests/cert_manager_install.sh
     - tests/dashboard_install.sh
     - tests/multi_tenancy_install.sh
+    - tests/katib_install.sh
+    - tests/workspaces_install.sh
+    - tests/workspaces_test.sh
+    - applications/workspaces/**
 
 permissions:
   contents: read
@@ -49,7 +53,7 @@ jobs:
       run: ./tests/keycloak_install.sh
 
     - name: Install oauth2-proxy connected directly to Keycloak
-      run: ./tests/oauth2-proxy_keycloak_install.sh
+      run: ./tests/keycloak_oauth2-proxy_install.sh
 
     - name: Install kubeflow-istio-resources
       run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
@@ -72,8 +76,8 @@ jobs:
     - name: Create the Kubeflow Profile
       run: ./tests/kubeflow_profile_install.sh
 
-    - name: Install Notebooks
-      run: ./tests/notebooks_install.sh
+    - name: Install Workspaces
+      run: ./tests/workspaces_install.sh
 
     - name: Install Katib
       run: ./tests/katib_install.sh
@@ -89,6 +93,9 @@ jobs:
         pip3 install -q requests
         python3 tests/keycloak_login_test.py
 
+    - name: Test Workspaces service account access
+      run: ./tests/workspaces_test.sh
+
     - name: Collect Logs on Failure
       if: failure()
       timeout-minutes: 5
@@ -96,7 +103,7 @@ jobs:
         mkdir -p logs
         kubectl get all --all-namespaces > logs/resources.txt
         kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt
-        for namespace in kubeflow istio-system cert-manager keycloak oauth2-proxy kserve knative-serving kubeflow-user-example-com; do
+        for namespace in kubeflow kubeflow-workspaces istio-system cert-manager keycloak oauth2-proxy kserve knative-serving kubeflow-user-example-com; do
             kubectl describe pods -n $namespace > logs/$namespace-pods.txt
             for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}'); do
                 kubectl logs -n $namespace $pod --all-containers --tail=200 > logs/$namespace-$pod.txt 2>&1 || true
