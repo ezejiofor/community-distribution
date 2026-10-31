@@ -13,6 +13,8 @@ Keycloak is a complete OpenID Connect provider, so Dex is not required between O
 
 The sections after this one describe the alternative setup with Dex between OAuth2 Proxy and Keycloak.
 
+The [Keycloak integration workflow](../../.github/workflows/keycloak_oauth2-proxy_test.yaml) uses the [test configuration](../../tests/keycloak/) to verify login, claims, namespace access and session refresh. It also runs the existing Workspaces service account access test. The test uses local HTTP and shorter token lifetimes; the example below uses HTTPS and the default Keycloak token lifetime.
+
 ### Create the Keycloak client
 
 In your realm, create a client with these settings:
@@ -36,13 +38,15 @@ Note the client secret from the Credentials tab.
 
 Create an overlay that replaces the OAuth2 Proxy configuration file and Secret. Never change `common/oauth2-proxy/base` directly.
 
+This example uses `m2m-dex-and-kind`, matching the integration test and preserving Kubernetes service account access on KinD. For another Kubernetes distribution, use the corresponding machine-to-machine overlay, such as `m2m-dex-and-eks`, instead.
+
 ```yaml
 # overlays/keycloak/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-- ../../common/oauth2-proxy/overlays/m2m-dex-only
+- ../../common/oauth2-proxy/overlays/m2m-dex-and-kind
 
 configMapGenerator:
 - name: oauth2-proxy
@@ -52,6 +56,7 @@ configMapGenerator:
 - name: oauth2-proxy-parameters
   behavior: merge
   literals:
+  - FORCE_HTTPS=true
   # Set to true only if the Keycloak certificate is not trusted by the OAuth2 Proxy image.
   - ALLOW_SELF_SIGNED_ISSUER=false
 
@@ -150,7 +155,7 @@ extensionProviders:
 ### Known issues without Dex
 
 - **Large cookies:** The OAuth2 Proxy cookie stores the ID token, the access token and the refresh token. A minimal Keycloak realm produces a cookie of about 3.5 kilobytes, but many groups, roles or custom claims can push it beyond 8 kilobytes. Several Kubeflow web applications then answer with HTTP status 431 (Request Header Fields Too Large). Store the session in Redis with `session_store_type = "redis"` so that the cookie only holds a session ticket, or apply the web application changes in the Known Issues section of [common/oauth2-proxy/README.md](../oauth2-proxy/README.md).
-- **Machine-to-machine access:** Kubernetes service account tokens continue to work as described in [common/oauth2-proxy/README.md](../oauth2-proxy/README.md), because they do not pass through Keycloak. Keycloak client credentials tokens are not covered here: they contain no email claim unless you configure one, so they do not produce a `kubeflow-userid` header.
+- **Machine-to-machine access:** The `m2m-dex-and-kind` overlay above retains Kubernetes service account token validation for KinD. Other Kubernetes distributions require the corresponding machine-to-machine overlay; `m2m-dex-only` does not provide Kubernetes service account token validation. See [common/oauth2-proxy/README.md](../oauth2-proxy/README.md) for the available overlays. Keycloak client credentials tokens are not covered here: these tokens contain no email claim unless you configure one, so these tokens do not produce a `kubeflow-userid` header.
 
 ## Configure Keycloak
 
