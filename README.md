@@ -62,8 +62,8 @@ This repository periodically synchronizes all official Kubeflow components from 
 | Component | Local Manifests Path | Upstream Revision | CPU (millicores) | Memory (Mi) | PVC Storage (GB) |
 | - | - | - | - | - | - |
 | Trainer | applications/trainer/upstream | [v2.3.0](https://github.com/kubeflow/trainer/tree/v2.3.0/manifests) | 8m | 143Mi | 0GB |
-| Kubeflow Notebooks | applications/notebooks-v1/upstream/ | [v1.11.0](https://github.com/kubeflow/notebooks/tree/v1.11.0/) | 43m | 806Mi | 0GB |
-| Kubeflow Dashboard | applications/dashboard/upstream/ | [v2.0.0](https://github.com/kubeflow/dashboard/tree/v2.0.0/) | 10m | 302Mi | 0GB |
+| Kubeflow Notebooks | applications/notebooks-v1/upstream/ | [v1.11.1](https://github.com/kubeflow/notebooks/tree/v1.11.1/) | 43m | 806Mi | 0GB |
+| Kubeflow Dashboard | applications/dashboard/upstream/ | [v2.0.1](https://github.com/kubeflow/dashboard/tree/v2.0.1/) | 10m | 302Mi | 0GB |
 | Katib | applications/katib/upstream | [v0.19.0](https://github.com/kubeflow/katib/tree/v0.19.0/manifests/v1beta1) | 13m | 476Mi | 10GB |
 | KServe UI | applications/kserve/kserve-ui | [v1.1.0](https://github.com/kserve/models-web-app/tree/v1.1.0/manifests/kustomize) | 6m | 259Mi | 0GB |
 | KServe | applications/kserve/kserve | [v0.21.0](https://github.com/kserve/kserve/tree/v0.21.0) | 600m | 1200Mi | 0GB |
@@ -288,6 +288,11 @@ data:
       format: text
     oauth2:
       skipApprovalScreen: true
+    expiry:
+      idTokens: "1h"
+      refreshTokens:
+        absoluteLifetime: "168h"
+        reuseInterval: "60s"
     enablePasswordDB: true
     #### WARNING: YOU SHOULD NOT USE THE DEFAULT STATIC PASSWORDS
     #### and patch /common/dex/base/dex-passwords.yaml in a Kustomize overlay or remove it
@@ -314,12 +319,23 @@ data:
         clientID: $AZURE_CLIENT_ID
         clientSecret: $AZURE_CLIENT_SECRET
         insecureSkipEmailVerified: true
+        # Dex adds prompt=consent to every authorization request once OAuth2 Proxy asks it
+        # for offline_access, and Entra ID then shows the consent dialog on every login.
+        # An empty promptType makes Dex send no prompt type, so Entra ID asks for consent
+        # once and signs in silently afterwards. Use select_account if your tenant rejects
+        # the empty value.
+        promptType: ""
         scopes:
         - openid
         - profile
         - email
+        # Microsoft Entra ID issues a refresh token only when offline_access is requested
+        # from it directly; requesting the scope from Dex does not forward it.
+        - offline_access
         #- groups # groups might be used in the future
 ```
+
+The `expiry` block above is the one shipped in `common/dex/overlays/oauth2-proxy/config-map.yaml`. An overlay that replaces the whole `config.yaml`, as this example does, has to carry it, or the session bounds and the concurrent-refresh window are lost: refresh tokens then never expire and a page load that refreshes twice ends the session. The identity provider must issue a refresh token for the login, because OAuth2 Proxy refreshes the session every 59 minutes; see [common/oauth2-proxy/README.md](common/oauth2-proxy/README.md#session-lifetime).
 
 For Keycloak, we have rough guidelines in <https://github.com/kubeflow/community-distribution/blob/master/common/dex/README.md>.
 
