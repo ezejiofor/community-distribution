@@ -147,7 +147,7 @@ jobs:
 
     # The legacy SDK needs lib2to3, which Python removed in 3.13.
     - name: Set up Python for pipeline SDK tests
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:
         python-version: '3.12'
 
@@ -263,7 +263,7 @@ jobs:
         mkdir -p logs
         kubectl get all --all-namespaces > logs/resources.txt
         kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt
-        for namespace in kubeflow kserve kubeflow-system istio-system cert-manager auth kubeflow-user-example-com; do
+        for namespace in kubeflow kserve kubeflow-system istio-system cert-manager auth oauth2-proxy kubeflow-user-example-com; do
             kubectl get namespace $namespace >/dev/null 2>&1 || continue
             kubectl describe pods -n $namespace > logs/$namespace-pods.txt
             for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}'); do
